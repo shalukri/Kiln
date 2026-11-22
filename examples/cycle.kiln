@@ -1,0 +1,6 @@
+# this one is broken on purpose: a -> b -> c -> a
+app    50 : a x
+a      10 : b
+b      10 : c
+c      10 : a
+x       5 :

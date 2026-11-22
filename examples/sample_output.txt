@@ -1,0 +1,99 @@
+./build/kiln plan examples/webapp.kiln
+25 targets, 48 dependencies, total work 12199 ms
+
+build order:
+    1. config.h (1 ms)
+    2. common.h (2 ms)
+    3. log.h (2 ms)
+    4. net.h (3 ms)
+    5. db.h (3 ms)
+    6. json.h (4 ms)
+    7. auth.h (2 ms)
+    8. router.h (2 ms)
+    9. log.o (380 ms)
+   10. json.o (940 ms)
+   11. net.o (1250 ms)
+   12. db.o (1710 ms)
+   13. auth.o (860 ms)
+   14. router.o (720 ms)
+   15. handlers.o (1980 ms)
+   16. main_server.o (310 ms)
+   17. main_cli.o (260 ms)
+   18. test_json.o (540 ms)
+   19. test_db.o (690 ms)
+   20. libcore.a (90 ms)
+   21. server (420 ms)
+   22. cli (180 ms)
+   23. unit_tests (300 ms)
+   24. docs (1400 ms)
+   25. package (150 ms)
+
+parallel levels (targets in one level do not depend on each other):
+  level 0: config.h
+  level 1: common.h, docs
+  level 2: log.h, net.h, db.h, json.h
+  level 3: auth.h, router.h, log.o, json.o, net.o, db.o, main_cli.o, test_json.o, ... (+1 more)
+  level 4: auth.o, router.o, handlers.o, main_server.o, libcore.a
+  level 5: server, cli, unit_tests
+  level 6: package
+./build/kiln critical examples/webapp.kiln
+total work     : 12199 ms (one worker does everything)
+critical path  : 2559 ms (best possible build time, even with endless workers)
+best speedup   : 4.77x
+7 of 25 targets have zero slack
+
+one critical path (7 targets):
+  config.h -> common.h -> json.h -> router.h ->
+  handlers.o -> server -> package
+
+targets with the most slack (they can run late for free):
+  main_cli.o               slack 1962 ms
+  test_json.o              slack 1712 ms
+  main_server.o            slack 1670 ms
+  test_db.o                slack 1563 ms
+  log.o                    slack 1514 ms
+./build/kiln simulate examples/webapp.kiln --workers 4
+4 worker(s)
+
+  policy             build time  utilization
+  fifo                  4491 ms        67.9%
+  critical-first        3209 ms        95.0%
+
+no schedule can beat 3050 ms here (the larger of critical path 2559 ms and work/workers 3050 ms)
+critical-first is 5.2% above that limit, fifo is 47.2% above
+./build/kiln sweep examples/webapp.kiln
+  workers   build time   speedup  utilization
+        1     12199 ms     1.00x       100.0%
+        2      6103 ms     2.00x        99.9%
+        4      3209 ms     3.80x        95.0%
+        8      2559 ms     4.77x        59.6%
+
+limit with endless workers: 2559 ms
+./build/kiln impact examples/webapp.kiln --changed json.h
+14 of 25 targets need a rebuild
+one worker      : 6756 ms (55.4% of a full build)
+endless workers : 2556 ms
+
+  json.h (4 ms)
+  router.h (2 ms)
+  json.o (940 ms)
+  auth.o (860 ms)
+  router.o (720 ms)
+  handlers.o (1980 ms)
+  main_server.o (310 ms)
+  main_cli.o (260 ms)
+  test_json.o (540 ms)
+  libcore.a (90 ms)
+  server (420 ms)
+  cli (180 ms)
+  unit_tests (300 ms)
+  package (150 ms)
+./build/kiln hotspots examples/webapp.kiln --top 5
+targets that cost the most when they change:
+
+  rank  target                    rebuilds rebuild time of total
+     1  config.h                        25     12199 ms   100.0%
+     2  common.h                        23     10798 ms    88.5%
+     3  json.h                          14      6756 ms    55.4%
+     4  net.h                           13      6267 ms    51.4%
+     5  db.h                             9      6115 ms    50.1%

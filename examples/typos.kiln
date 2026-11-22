@@ -1,0 +1,7 @@
+# several mistakes, all of them get reported in one go
+main.o   10 : util.o missing.o
+util.o   15 :
+util.o   20 :
+core.o   abc :
+lib       5 : main.o util.o core.o
+bad name  3 :

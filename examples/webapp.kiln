@@ -1,0 +1,32 @@
+# a made up C++ web service
+# costs are rough compile times in ms
+# format:  name cost : dependencies
+
+config.h       1 :
+common.h       2 : config.h
+log.h          2 : common.h
+net.h          3 : common.h
+db.h           3 : common.h
+json.h         4 : common.h
+auth.h         2 : net.h db.h
+router.h       2 : net.h json.h
+
+log.o        380 : log.h
+json.o       940 : json.h log.h
+net.o       1250 : net.h log.h
+db.o        1710 : db.h log.h
+auth.o       860 : auth.h json.h
+router.o     720 : router.h
+handlers.o  1980 : router.h db.h auth.h json.h
+main_server.o 310 : router.h log.h
+main_cli.o   260 : json.h log.h
+test_json.o  540 : json.h
+test_db.o    690 : db.h
+
+libcore.a     90 : log.o json.o net.o
+server       420 : libcore.a db.o auth.o router.o handlers.o main_server.o
+cli          180 : libcore.a main_cli.o
+unit_tests   300 : libcore.a db.o test_json.o test_db.o
+
+docs        1400 : config.h
+package      150 : server cli docs
